@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "libusb",
+    "License": "LGPL-2.1-only",
+    "License File": "COPYING",
+    "Version Number": "1.0.28",
+    "Owner": "chenyuankui@huawei.com",
+    "Upstream URL": "https://github.com/libusb/libusb.git",
+    "Description": "libusb is a C library that provides generic access to USB devices."
+  }
+]

@@ -1,0 +1,82 @@
+{
+  "name": "hdc-studio",
+  "version": "0.1.0",
+  "description": "Windows HDC desktop client for OpenHarmony devices",
+  "author": "HDC Studio",
+  "private": true,
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "node scripts/build-win.cjs pack",
+    "dist": "node scripts/build-win.cjs dist"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "node-pty": "1.1.0"
+  },
+  "devDependencies": {
+    "electron": "44.2.0",
+    "electron-builder": "26.15.3",
+    "playwright": "^1.58.0"
+  },
+  "build": {
+    "appId": "local.hdcstudio.desktop",
+    "productName": "HDC Studio",
+    "asar": true,
+    "npmRebuild": false,
+    "files": [
+      "src/**/*",
+      "resources/icon.png",
+      "package.json",
+      "NOTICE.md",
+      "README.md",
+      "LICENSE",
+      "third_party/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/hdc",
+        "to": "hdc"
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/node-pty/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "portable": {
+      "artifactName": "HDC-Studio-${version}-Windows-x64.exe"
+    },
+    "extraFiles": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.hdc-studio.txt"
+      },
+      {
+        "from": "NOTICE.md",
+        "to": "NOTICE.hdc-studio.md"
+      },
+      {
+        "from": "third_party",
+        "to": "third_party"
+      }
+    ]
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
