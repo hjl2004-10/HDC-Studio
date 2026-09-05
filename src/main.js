@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron')
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
-const { pathToFileURL } = require('node:url');
+const { fileURLToPath } = require('node:url');
 const { HdcClient } = require('./lib/hdc');
 const { TransferManager } = require('./lib/transfers');
 const { TerminalManager } = require('./lib/terminal');
@@ -26,11 +26,21 @@ let settingsWrite = Promise.resolve();
 let closing = false;
 let closeDialogOpen = false;
 const rendererFile = path.join(__dirname, 'renderer', 'index.html');
-const rendererUrl = pathToFileURL(rendererFile).href;
+
+function isRendererUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'file:' || url.search || url.hash) return false;
+    // Node encodes '~' as %7E while Chromium leaves it literal. Compare the
+    // decoded exact file path, including Windows short TEMP directory names.
+    const candidate = path.resolve(fileURLToPath(url));
+    return process.platform === 'win32' ? candidate.toLowerCase() === rendererFile.toLowerCase() : candidate === rendererFile;
+  } catch { return false; }
+}
 
 function trusted(event) {
   return window && !window.isDestroyed() && event.sender === window.webContents &&
-    event.senderFrame && event.senderFrame.url === rendererUrl;
+    event.senderFrame === window.webContents.mainFrame && isRendererUrl(event.senderFrame.url);
 }
 
 function send(channel, payload) {
@@ -293,9 +303,9 @@ async function createWindow() {
       nodeIntegration: false, sandbox: true, spellcheck: false, webSecurity: true }
   });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  window.webContents.on('will-navigate', (event, url) => { if (url !== rendererUrl) event.preventDefault(); });
+  window.webContents.on('will-navigate', (event, url) => { if (!isRendererUrl(url)) event.preventDefault(); });
   window.webContents.session.setPermissionRequestHandler((wc, permission, callback) => {
-    callback(wc === window?.webContents && wc.getURL() === rendererUrl &&
+    callback(wc === window?.webContents && isRendererUrl(wc.getURL()) &&
       ['clipboard-read', 'clipboard-sanitized-write'].includes(permission));
   });
   window.once('ready-to-show', () => window.show());
